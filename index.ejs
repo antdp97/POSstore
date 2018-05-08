@@ -1,0 +1,372 @@
+
+<html lang="en">
+
+<head>
+    <title></title>
+    <!-- Không Xóa-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="jquery.js"></script>
+    <script src="socket.io/socket.io.js"></script>
+    <style>
+        /* In order to place the tracking correctly */
+        canvas.drawing, canvas.drawingBuffer {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+
+    div.ex1 {
+        background-color: lightblue;
+        width: 650px;
+        height: 130px;
+        overflow: auto;
+    }
+    div.ex2 {
+        background-color: white;
+        width: 650px;
+        height: 330px;
+        overflow: auto;
+    }
+    table#t01 th {
+                background-color: red;
+                color: white;
+            }
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 17px 59px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 0px 0px;
+        cursor: pointer;
+    }
+    .button2 {
+        background-color: #f44336;;
+        border: none;
+        color: white;
+        padding: 45px 51px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 0px 0px;
+        cursor: pointer;
+    }
+    .button3 {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 17px 136px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 0px 0px;
+        cursor: pointer;
+    }
+    .button4 {
+        background-color: #008CBA;
+        border: none;
+        color: white;
+        padding: 17px 80px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 0px 0px;
+        cursor: pointer;
+    }
+
+    </style>
+    <script>var socket = io("http://localhost:80");</script>
+    <!-- Khong Xóa-->
+</head>
+<body>
+    <!--Function-->
+<table>
+    <th><font size="+2"><u><b>POS</b></u></font></th>
+    <th><font size="+2"><u><b>Report</b></u></font></th>
+    <th><font size="+2"><u><b>Stock</b></u></font></th>
+    <th Align=Left>
+       <form action='/auth/sign_in' method='post'>
+        <!--Log-in box-->
+        <input type="text" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="submit" name="submit" value="Submit">
+        
+        
+        </form>
+    </th>
+</table>
+<!--Table of POS-->
+<strong> <hr size="15" noshade="noshade"></strong>
+<table align=top border=2>
+    <tr>
+        <!--Left table-->
+        <th width="675" height="200" VALIGN = Top Align = Left>
+            <!--barcode place-->
+            <p align="left"><input type="text" name="Barcode" placeholder="Enter name or Barcode" size="60"> </p>
+            <!--Receipt-->
+            <!--Calculation part-->
+            <div id="printableTable" class="ex1">
+                <table id="ListItem">
+                    <tr>
+                        <p align="left"><b><u>PRODUCT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PRICE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; QUANTITY &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TOTAL </u></b></p>
+                    </tr>
+                    <tr>
+                        <td width="168" height="50">Total</td>
+                        <td width="168" height="50" ></td>
+                        <td width="168" height="50" id="sumnum"></td>
+                        <td width="168" height="50" id="sumprice"></td>
+                    </tr>
+                </table>
+            </div>
+            <!--Button for cancel and print-->
+            <table id="buttons">
+                <tbody><tr><th width="675" height="50" valign="Top" align="Left"><button class="button3" onclick="deletefunc()"> Cancel </button></th>
+                <th width="675" height="50" valign="Top" align="Left"><button class="button3" onclick="printDiv()"> Print</button> </th>
+            </tr></tbody></table>
+            <!--For barcode camera-->
+                <table id="Camera" bgcolor="red">
+                    <tr><th width="675" height="190" valign="Center" align="Center">
+                         <script src="barcode.js"></script>
+              <div class="row">
+                        <div class="col-lg-6">
+                            <div class="input-group">
+                                <input id="scanner_input" class="form-control" placeholder="Click the button to scan an EAN..." type="text" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" data-toggle="modal" data-target="#livestream_scanner">
+                                        <i class="fa fa-barcode"></i>
+                                    </button>
+                                </span>
+                            </div><!-- /input-group -->
+                        </div><!-- /.col-lg-6 -->
+                    </div><!-- /.row -->
+                    <div class="modal" id="livestream_scanner">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>-->
+                                </div>
+                                <div class="modal-body" style="position: static">
+                                    <div id="interactive" class="viewport"></div>
+                                    <div class="error"></div>
+                                </div>
+                                <!--<div class="modal-footer">
+                                    <label class="btn btn-default pull-left">
+                                        <i class="fa fa-camera"></i> Use camera app
+                                        <input type="file" accept="image/*;capture=camera" capture="camera" class="hidden" />
+                                    </label>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                </div>-->
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal -->
+                <!--End of camera-->
+                    </th></tr>
+                </table>
+
+        </th>
+
+
+
+
+                <!--End of camera-->
+        <!--Right table-->
+        <th width="675" height="100" VALIGN = Top Align = Left>
+            <table border=1>
+                    <!--Categories buttons-->
+                    <th width="135" height="50"><button class="button">1</button></th>
+                    <th width="135" height="50"><button class="button">2</button></th>
+                    <th width="135" height="50"><button class="button">3</button></th>
+                    <th width="135" height="50"><button class="button">4</button></th>
+                    <th width="135" height="50"><button class="button">5</button></th>
+            </table>
+            <table >
+                <th width="675" height="1" VALIGN = Top Align = Left>
+                <!--Search engine of products-->
+                    <p align="left"><input type="text" name="Search" placeholder="Search" size="90" id="find">  <button onclick="find()" >Add</button>  </p>
+            </th>
+            </table>
+        <div class="ex2">
+            <table id="t01" VALIGN = Middle Align = Center>
+                <!--Example of Products-->
+                <tr>
+                    <th width="110" height="110"><button id="1"  class="button2" onclick="myFunction(123,123)">Sth 123</button></th>
+                    <th width="110" height="110"><button id="2" class="button2" onclick="myFunction(23,23)">Sth2 23</button></th>
+                    <th width="110" height="110"><button id="3" class="button2" onclick="myFunction(34,34)">Sth3 34</button></th>
+                    <th width="110" height="110"><button id=4 class="button2">4</button></th>
+                    <th width="110" height="110"><button id=5 class="button2">5</button></th>
+                </tr>
+                <tr>
+                    <th width="110" height="110"><button id=6 class="button2">1</button></th>
+                    <th width="110" height="110"><button id=7 class="button2">2</button></th>
+                    <th width="110" height="110"><button id=8 class="button2">3</button></th>
+                    <th width="110" height="110"><button id=9 class="button2">4</button></th>
+                    <th width="110" height="110"><button id=10 class="button2">5</button></th>
+                </tr>
+                <tr>
+                    <th width="110" height="110"><button id=11 class="button2">1</button></th>
+                    <th width="110" height="110"><button id=12 class="button2">2</button></th>
+                    <th width="110" height="110"><button id=13 class="button2">3</button></th>
+                    <th width="110" height="110"><button id=14 class="button2">4</button></th>
+                    <th width="110" height="110"><button id=15 class="button2">5</button></th>
+                </tr>
+                <tr>
+                    <th width="110" height="110"><button id=16 class="button2">1</button></th>
+                    <th width="110" height="110"><button id=17 class="button2">2</button></th>
+                    <th width="110" height="110"><button id=18 class="button2">3</button></th>
+                    <th width="110" height="110"><button id=19 class="button2">4</button></th>
+                    <th width="110" height="110"><button id=20 class="button2">5</button></th>
+                </tr>
+
+            </table>
+        </div>
+        </th>
+    </tr>
+</table>
+<table>
+    <th width="650" height="50" VALIGN = Top Align = Left>
+        <!--Print statistics locally ( for employee )-->
+        <table border=1>
+            <th width="300" height="50" VALIGN = Top Align = Left><font size="+1">Print Local Statistics </font></th>
+            <th width="150" height="50" VALIGN = Top Align = Left><button class="button4">Daily</button></th>
+            <th width="150" height="50" VALIGN = Top Align = Left><button class="button4">Monthly</button></th>
+        </table>
+    </th>
+    <th width="675" height="50" VALIGN = Top Align = Left>
+        <!--Print total statistics ( for employer )-->
+        <table border=1>
+            <th width="300" height="50" VALIGN = Top Align = Left><font size="+1">Print Total Statistics </font></th>
+            <th width="150" height="50" VALIGN = Top Align = Left><button class="button4">Daily</button></th>
+            <th width="150" height="50" VALIGN = Top Align = Left><button class="button4">Monthly</button></th>
+            <th width="150" height="50" VALIGN = Top Align = Left><button class="button">All</button></th>
+        </table>
+    </th>
+</table>
+ <iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank"></iframe>
+        <script type = "text/javascript">
+            document.body.innerHTML = document.body.innerHTML.replace("&amp;tab;", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;").replace("&amp;tabf;", "&nbsp;&nbsp;&nbsp;&nbsp;");
+        </script>
+        <!--function for calculating for the receipt-->
+        <script>
+            var array = [];
+            var array2= [];
+            var rowarray = [];
+            var sum123 =0;
+            var sumnum =0;
+            function myFunction(a,b) {
+                var check = false;
+                var check2 = 0;
+                for (i=0;i<array.length;i++){
+                    if (a == array[i]){
+                        check = true;
+                        check2 = i;
+                    }
+                }
+                if (check){
+                    var index = array.indexOf(a);
+                    array2[index] = array2[index]+1;
+                    var x = document.getElementById("ListItem").rows.length;
+                    if (x>1){
+                        document.getElementById("ListItem").deleteRow(rowarray[index]);
+                    }
+                    var table = document.getElementById("ListItem");
+                    var row = table.insertRow(rowarray[index]);
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    var cell3 = row.insertCell(2);
+                    var cell4 = row.insertCell(3);
+                    cell1.innerHTML = a;
+                    cell2.innerHTML = b;
+                    cell3.innerHTML = array2[index];
+                    cell4.innerHTML = b*array2[index];
+                    sum123 = sum123+b;
+                    sumnum = sumnum + 1;
+                    document.getElementById("sumnum").innerHTML = sumnum;
+                    document.getElementById("sumprice").innerHTML = sum123;
+                }
+                else{
+                    for (i=0;i<rowarray.length;i++){
+                        rowarray[i] = rowarray[i] +1;
+                    }
+                    rowarray.push(0);
+                    array.push(a);
+                    array2.push(1);
+                    var table = document.getElementById("ListItem");
+                    var row = table.insertRow(0);
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    var cell3 = row.insertCell(2);
+                    var cell4 = row.insertCell(3);
+                    cell1.innerHTML = a;
+                    cell2.innerHTML = b;
+                    cell3.innerHTML = 1;
+                    cell4.innerHTML = b*1;
+                    sum123 = sum123 + b;
+                    sumnum = sumnum + 1;
+                    document.getElementById("sumnum").innerHTML = sumnum;
+                    document.getElementById("sumprice").innerHTML = sum123;
+                }
+        }
+    //function for reseting the receipt
+    function deletefunc(){
+            var x = document.getElementById("ListItem").rows.length;
+            for (i=1;i<x;i++){
+                document.getElementById("ListItem").deleteRow(0);
+            }
+            for (i=0;i<x;i++){
+                array.pop();
+                array2.pop();
+                rowarray.pop();
+            }
+            sum123 =0;
+            sumnum =0;
+            document.getElementById("sumnum").innerHTML = sumnum;
+            document.getElementById("sumprice").innerHTML = sum123;
+        }
+</script>
+ 
+
+<script type="text/javascript">
+    function cate(x,y){
+        var table1 = document.getElementById("t01");
+        var k = document.getElementById("t01").rows.length;
+        for (i=0;i<k;i++){
+            document.getElementById("t01").deleteRow(0);
+        }
+        var checke=0;
+        var row1 = table1.insertRow(0);
+        for (i=x;i<=y;i++){
+            var cell =row1.insertCell(checke);
+            cell.innerHTML= document.getElementById(i);
+            if (checke==4){
+                row1 = table1.insertRow(0);
+                checke=0;
+            }
+            checke= checke+1;
+            }
+        }
+</script>
+<script type="text/javascript">
+    function printDiv() {
+        window.frames["print_frame"].document.body.innerHTML = document.getElementById("printableTable").innerHTML;
+        window.frames["print_frame"].window.focus();
+        window.frames["print_frame"].window.print();
+      }
+</script>
+<script type="text/javascript">
+    function find(){
+        var x = document.getElementById("find").value;
+        document.getElementById(x).click();
+    }
+</script>
+</body>
+</html>
