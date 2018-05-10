@@ -1,0 +1,5 @@
+[{"_id":{"$oid":"5aea80129c0589e7dd0b7e64"},"id":"0036000291452","name":"Book","price":10000,"quantity":20.0},
+{"_id":{"$oid":"5aea81149c0589e7dd0b7e65"},"id":"0123456789012","name":"Novel","price":20000,"quantity":20.0},
+{"_id":{"$oid":"5aea81859c0589e7dd0b7e66"},"id":"0671860013624","name":"Magazine","price":30000,"quantity":25.0},
+{"_id":{"$oid":"5aea81ba9c0589e7dd0b7e67"},"id":"0705632441947","name":"Newspaper","price":40000,"quantity":60.0},
+{"_id":{"$oid":"5aea821c9c0589e7dd0b7e68"},"id":"0712345678911","name":"Comics","price":50000,"quantity":49.0}]
